@@ -8,6 +8,8 @@ class Organize:
     def __init__(self):
         self.products = []
         self.brands = {}
+        self.categories = {}
+        self.colors = {}
 
     def get_products(self):
 
@@ -32,21 +34,24 @@ class Organize:
                     # load product
                     product = json.load(f, encoding='utf-8')
 
+                    # flip category order
+                    if 'cat' in product and isinstance(product['cat'], list):
+                        product['cat'] = product['cat'][::-1]
+
                     # add product to products
                     self.products.append(product)
 
                 if pos > 3:
                     break
-            break
 
 
     def load_brands(self):
 
         # filter products that do not have brand
-        filter_products = list(filter(lambda product : 'brand' in product, self.products))
+        filter_products_with_brand = list(filter(lambda product : 'brand' in product, self.products))
 
         # map through each products in list
-        brands = list(map(self._parse_brand, filter_products))
+        brands = list(map(self._parse_brand, filter_products_with_brand))
 
         # remove duplicate from list
         brands = list(set(brands))
@@ -65,6 +70,64 @@ class Organize:
                 "name_ko" : brand[1],
                 "name_ori" : brand[2]
             }
+
+
+    def load_categories(self):
+
+        # temp category list
+        temp_categories = {
+            # for each level
+            0 : { },
+            1 : { },
+            2 : { },
+            3 : { },
+            4 : { },
+            5 : { }
+        }
+
+        # filter products that do not have category
+        filter_products_with_category = list(filter(lambda product : 'cat' in product, self.products))
+
+        # loop through each product and add proper category
+        for product in filter_products_with_category:
+
+            # check if category is a list format or a string format
+            # check to list format for easy processing
+            categories = product['cat'] if isinstance(product['cat'], list) else list(product['cat'])
+
+            for index,category in enumerate(categories):
+                temp_categories[index][category] = 0
+
+        for index in temp_categories:
+            for category in temp_categories[index]:
+
+                pc = ProductCategoriesM()
+                pc.name = category
+                pc.level = index
+                temp_categories[index][category] = pc.create()
+
+        # set global category
+        self.categories = temp_categories
+
+
+    def load_colors(self):
+
+        # filter products that do not have category
+        filter_products_with_color = list(filter(lambda product : 'color' in product, self.products))
+
+        # loop through each product and add proper category
+        for product in filter_products_with_color:
+
+            # add color
+            self.colors[product['color'].lower()] = 0
+
+        # loop through color list
+        # add to database
+        for color in self.colors:
+            pc = ProductColorsM()
+            pc.name = color
+            self.colors[color] = pc.create()
+
 
     def _parse_brand(self, product):
 
@@ -97,3 +160,9 @@ if __name__ == "__main__":
 
     # insert all brands into the database first
     org.load_brands()
+
+    # insert all categories into the database
+    org.load_categories()
+
+    # insert all colors into the database
+    org.load_colors()
