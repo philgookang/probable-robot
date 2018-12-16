@@ -75,15 +75,8 @@ class Organize:
     def load_categories(self):
 
         # temp category list
-        temp_categories = {
-            # for each level
-            0 : { },
-            1 : { },
-            2 : { },
-            3 : { },
-            4 : { },
-            5 : { }
-        }
+        # for each level
+        temp_categories = { 0 : { }, 1 : { }, 2 : { }, 3 : { }, 4 : { }, 5 : { } }
 
         # filter products that do not have category
         filter_products_with_category = list(filter(lambda product : 'cat' in product, self.products))
@@ -95,6 +88,7 @@ class Organize:
             # check to list format for easy processing
             categories = product['cat'] if isinstance(product['cat'], list) else list(product['cat'])
 
+            # save category to dictionary
             for index,category in enumerate(categories):
                 temp_categories[index][category] = 0
 
