@@ -1,5 +1,6 @@
 import os
 import json
+import re
 from multiprocessing import Pool
 from setting import *
 
@@ -15,6 +16,7 @@ class Organize:
 
         path = '/mnt/ssd3/intellisys/data/'
         malls = ['musinsa', 'sisun', 'stylenanda']
+        malls = ['musinsa']
 
         # loop through each malls
         for mall in malls:
@@ -34,6 +36,22 @@ class Organize:
                     # load product
                     product = json.load(f, encoding='utf-8')
 
+                    ## --------------------
+
+                    # rename category
+                    if 'cate' in product:
+                        product['cat'] = product['cate']
+
+                    # rename name
+                    if 'en_name' in product:
+                        product['tit'] = product['en_name']
+
+                    # rename description
+                    if 'dsc' in product:
+                        product['desc'] = product['dsc']
+
+                    ## --------------------
+
                     # flip category order
                     if 'cat' in product and isinstance(product['cat'], list):
                         product['cat'] = product['cat'][::-1]
@@ -41,7 +59,7 @@ class Organize:
                     # add product to products
                     self.products.append(product)
 
-                if pos > 3:
+                if pos > 30:
                     break
 
 
@@ -123,6 +141,53 @@ class Organize:
             self.colors[color] = pc.create()
 
 
+    def load_products(self):
+
+        for product in self.products:
+
+            pm = ProductsM()
+            pm.mall_idx     = 1 # 무신사 고정
+            if 'brand' in product:
+                brand = self.brands[ product['brand'].lower() ]
+                pm.brand_idx = brand['idx']
+            else:
+                pm.brand_idx = 0
+            pm.name         = product['tit']
+            pm.second_name  = product['sub_tit']    if 'sub_tit'    in product else ''
+            pm.name_ko      = product['ko_name']    if 'ko_name'    in product else ''
+            pm.description  = product['desc']       if 'desc'       in product else ''
+            pm.price        = re.sub(r"\D", "", product['pri'])
+            pm.product_id   = product['pro_id']
+            pm.mp_id        = product['id']
+
+            # check if category is a list format or a string format
+            # check to list format for easy processing
+            if 'cat' not in product:
+                product['cat'] = list()
+
+            # categories list
+            categories = product['cat'] if isinstance(product['cat'], list) else list(product['cat'])
+
+            pm.category_1_idx = 0
+            pm.category_2_idx = 0
+            pm.category_3_idx = 0
+            pm.category_4_idx = 0
+
+            for key,val in enumerate(categories):
+                if key in self.categories:
+                    if val in self.categories[key]:
+                        if key == 0:
+                            pm.category_1_idx = self.categories[key][val]
+                        elif key == 1:
+                            pm.category_2_idx = self.categories[key][val]
+                        elif key == 2:
+                            pm.category_3_idx = self.categories[key][val]
+                        elif key == 3:
+                            pm.category_4_idx = self.categories[key][val]
+
+            pm.create()
+
+
     def _parse_brand(self, product):
 
         brand_ori = product['brand'].lower()
@@ -160,3 +225,6 @@ if __name__ == "__main__":
 
     # insert all colors into the database
     org.load_colors()
+
+    # load products into database
+    org.load_products()
