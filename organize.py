@@ -59,8 +59,8 @@ class Organize:
                     # add product to products
                     self.products.append(product)
 
-                #if pos > 300:
-            #        break
+                # if pos > 100:
+                #    break
 
 
     def load_brands(self):
@@ -216,7 +216,6 @@ class Organize:
             for c in colors:
                 name = name.replace("({0})".format(c), " " + c) # (  )
                 name = name.replace("[{0}]".format(c), " " + c) # [ ]
-                name = name.replace("")
 
             # remove [****]
             # example
@@ -249,6 +248,7 @@ class Organize:
             # remove seasons
             # example
             # 1. 18 S/S
+            # 2. fw17
             name = name.replace("18 s/s", "")
 
             # remove whitespaces
