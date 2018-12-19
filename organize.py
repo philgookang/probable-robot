@@ -150,8 +150,13 @@ class Organize:
             if 'brand' in product:
                 brand = self.brands[ product['brand'].lower() ]
                 pm.brand_idx = brand['idx']
+
+                pb = ProductBrandsM()
+                pb.idx = brand['idx']
+                pb.increaseCounter()
             else:
                 pm.brand_idx = 0
+
             pm.name         = product['tit']
             pm.name_ori     = product['tit']
             pm.second_name  = product['sub_tit']    if 'sub_tit'    in product else ''
@@ -191,9 +196,27 @@ class Organize:
             # color processing
             # replace [] & () color text
             colors = ["black", "beige", "mint", "white", "red", "brown", "navy", "grey", "yellow", "light blue", "pink", "orange", "green", "blue"]
+            colors_translate = {
+                "yellow"        : "옐로우",
+                "black"         : "블랙",
+                "beige"         : "베이지",
+                "mint"          : "민트",
+                "white"         : "화이트",
+                "red"           : "빨간",
+                "brown"         : "갈색",
+                "navy"          : "네이비",
+                "grey"          : "그레이",
+                "pink"          : "핑크",
+                "light blue"    : "라이브 블루",
+                "orange"        : "오랜지",
+                "blue"          : "블루",
+                "green"         : "초록",
+                "meta silver"   : "메타 실버"
+            }
             for c in colors:
                 name = name.replace("({0})".format(c), " " + c) # (  )
                 name = name.replace("[{0}]".format(c), " " + c) # [ ]
+                name = name.replace("")
 
             # remove [****]
             # example
