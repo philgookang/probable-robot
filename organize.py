@@ -59,8 +59,8 @@ class Organize:
                     # add product to products
                     self.products.append(product)
 
-                if pos > 30:
-                    break
+                #if pos > 300:
+            #        break
 
 
     def load_brands(self):
@@ -153,12 +153,101 @@ class Organize:
             else:
                 pm.brand_idx = 0
             pm.name         = product['tit']
+            pm.name_ori     = product['tit']
             pm.second_name  = product['sub_tit']    if 'sub_tit'    in product else ''
             pm.name_ko      = product['ko_name']    if 'ko_name'    in product else ''
             pm.description  = product['desc']       if 'desc'       in product else ''
             pm.price        = re.sub(r"\D", "", product['pri'])
+
+            # check if price is empty
+            if pm.price == '':
+                # skip price
+                pm.price = -999
+
             pm.product_id   = product['pro_id']
             pm.mp_id        = product['id']
+
+
+            ## ---------------------------
+
+            # make name variable
+            name = pm.name
+
+            # remove product number : use product id to remove
+            # example
+            # 1. 리버티 베이직 슬립온 SVS7205LB71
+            # 2. 모던지퍼 하프부츠 DL10133 DA:EL
+            # exception
+            # 1. FS7WO34WBK
+            pattern = re.compile(r"\((.*?)\)")
+            result = pattern.search(pm.product_id)
+            if result:
+                product_id = result.group(1)
+                name = name.replace(product_id, "")
+
+            # change text to english now
+            name = name.lower()
+
+            # color processing
+            # replace [] & () color text
+            colors = ["black", "beige", "mint", "white", "red", "brown", "navy", "grey", "yellow", "light blue", "pink", "orange", "green", "blue"]
+            for c in colors:
+                name = name.replace("({0})".format(c), " " + c) # (  )
+                name = name.replace("[{0}]".format(c), " " + c) # [ ]
+
+            # remove [****]
+            # example
+            # 1. [18SS 신상]
+            # 2. [해외]
+            pattern = re.compile(r"\[(.*?)\]")
+            name = pattern.sub("", name)
+
+            # remove (****)
+            # exmaple
+            # 1. (943344-008)
+            # 2. (그레이)
+            pattern = re.compile(r"\((.*?)\)")
+            name = pattern.sub("", name)
+
+            # convert _ (underbar)
+            # example
+            # 1. REKKEN Pumps_ROCHE RK216
+            # 2. Lily One Piece_Black
+            name = name.replace("_", " ")
+
+            # convert - (dash)
+            # example
+            name = name.replace("-", " ")
+
+            # remove * symbol
+            # example
+            name = name.replace("*", "")
+
+            # remove seasons
+            # example
+            # 1. 18 S/S
+            name = name.replace("18 s/s", "")
+
+            # remove whitespaces
+            name = name.rstrip()
+
+            # save processed name
+            pm.name = name
+
+            ## --------------------------
+
+            ## exclustion
+
+            # price not found
+            pm.ml_exclude_price = 1 if pm.price == -999 else 0
+
+            # check if its korean or not
+            if all(ord(char) < 128 for char in name):
+                pm.ml_exclude_lang = 1
+            else:
+                pm.ml_exclude_lang = 0
+
+            ## --------------------------
 
             # check if category is a list format or a string format
             # check to list format for easy processing
@@ -176,6 +265,13 @@ class Organize:
             for key,val in enumerate(categories):
                 if key in self.categories:
                     if val in self.categories[key]:
+
+                        # increase counter
+                        pc = ProductCategoriesM()
+                        pc.idx = self.categories[key][val]
+                        pc.increaseCounter()
+
+                        # set product category idx number
                         if key == 0:
                             pm.category_1_idx = self.categories[key][val]
                         elif key == 1:
@@ -185,7 +281,43 @@ class Organize:
                         elif key == 3:
                             pm.category_4_idx = self.categories[key][val]
 
-            pm.create()
+            # after inserting to database
+            # save product idx
+            product_idx = pm.create()
+
+            # now, insert image to database
+            self.load_image(product, product_idx)
+
+
+    def load_image(self, product, product_idx):
+
+        for index,img in enumerate(product['img']):
+
+            # split image path by /
+            components = img.split("/")
+
+            # retrieve filename from image path components
+            filename = components[len(components)-1]
+
+            ## ------------------------
+
+            # remove detail_
+            filename = filename.replace('detail_', '')
+
+            # remove _big
+            filename = filename.replace('_big', '')
+
+            # remove 500
+            filename = filename.replace('_500', '')
+
+            ## ------------------------
+
+            # create product image
+            pi              = ProductImagesM()
+            pi.sort_idx     = index
+            pi.product_idx  = product_idx
+            pi.filename     = filename
+            pi.create()
 
 
     def _parse_brand(self, product):
