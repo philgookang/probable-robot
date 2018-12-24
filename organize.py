@@ -213,6 +213,7 @@ class Organize:
                 "green"         : "초록",
                 "meta silver"   : "메타 실버"
             }
+            # 곤색
             for c in colors:
                 name = name.replace("({0})".format(c), " " + c) # (  )
                 name = name.replace("[{0}]".format(c), " " + c) # [ ]
@@ -245,11 +246,22 @@ class Organize:
             # example
             name = name.replace("*", "")
 
+            # remove + symbol
+            # example
+            name = name.replace("+", " ")
+
             # remove seasons
             # example
             # 1. 18 S/S
             # 2. fw17
             name = name.replace("18 s/s", "")
+
+            # remove made in
+            # example
+            # 1.  made in italy
+            name = name.replace("made in spain", "")
+            name = name.replace("made in italy", "")
+            name = name.replace("made in itlay", "")
 
             # remove whitespaces
             name = name.rstrip()
@@ -332,6 +344,9 @@ class Organize:
 
             # remove 500
             filename = filename.replace('_500', '')
+
+            ## check with WGET to see if image exists
+
 
             ## ------------------------
 
