@@ -1,6 +1,7 @@
 import os
 import json
 import re
+import requests
 from multiprocessing import Pool
 from setting import *
 
@@ -345,8 +346,14 @@ class Organize:
             # remove 500
             filename = filename.replace('_500', '')
 
-            ## check with WGET to see if image exists
+            # check if multi segment
+            seg_filename = filename.split("_")
+            if len(seg_filename) >= 3:
+                file_extension = seg_filename[2].split('.')
+                filename = seg_filename[0] + "_" + seg_filename[1] + "." + file_extension[1]
 
+            ## check with WGET to see if image exists
+            filename = self.check_image_file(filename)
 
             ## ------------------------
 
@@ -356,6 +363,22 @@ class Organize:
             pi.product_idx  = product_idx
             pi.filename     = filename
             pi.create()
+
+
+    def check_image_file(self, filename, attempt = 0):
+
+        url = '/mnt/ssd3/probable-robot/ui/public/images/{0}'.format(filename)
+        exists = os.path.isfile(url)
+
+        if attempt >= 3:
+            return filename
+
+        if not exists:
+            split_filename = filename.split('.')
+            new_filename = split_filename[0][:-1] + "1." + split_filename[1]
+            return self.check_image_file(new_filename, (attempt + 1))
+
+        return filename
 
 
     def _parse_brand(self, product):
