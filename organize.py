@@ -327,59 +327,24 @@ class Organize:
 
     def load_image(self, product, product_idx):
 
-        for index,img in enumerate(product['img']):
+        sort_idx = 0
+        for num in range(20):
 
-            # split image path by /
-            components = img.split("/")
+            filename = '{0}_{1}.jpg'.format(product['id'], num)
+            url = '/mnt/ssd3/probable-robot/ui/public/images/{0}'.format(filename)
+            exists = os.path.isfile(url)
 
-            # retrieve filename from image path components
-            filename = components[len(components)-1]
+            # check if file exists
+            if exists:
+                # create product image
+                pi              = ProductImagesM()
+                pi.sort_idx     = sort_idx
+                pi.product_idx  = product_idx
+                pi.filename     = filename
+                pi.create()
 
-            ## ------------------------
-
-            # remove detail_
-            filename = filename.replace('detail_', '')
-
-            # remove _big
-            filename = filename.replace('_big', '')
-
-            # remove 500
-            filename = filename.replace('_500', '')
-
-            # check if multi segment
-            seg_filename = filename.split("_")
-            if len(seg_filename) >= 3:
-                file_extension = seg_filename[2].split('.')
-                filename = seg_filename[0] + "_" + seg_filename[1] + "." + file_extension[1]
-
-            ## check with WGET to see if image exists
-            filename = self.check_image_file(filename)
-
-            ## ------------------------
-
-            # create product image
-            pi              = ProductImagesM()
-            pi.sort_idx     = index
-            pi.product_idx  = product_idx
-            pi.filename     = filename
-            pi.create()
-
-
-    def check_image_file(self, filename, attempt = 0):
-
-        url = '/mnt/ssd3/probable-robot/ui/public/images/{0}'.format(filename)
-        exists = os.path.isfile(url)
-
-        if attempt >= 3:
-            return filename
-
-        if not exists:
-            split_filename = filename.split('.')
-            new_filename = split_filename[0][:-1] + "1." + split_filename[1]
-            return self.check_image_file(new_filename, (attempt + 1))
-
-        return filename
-
+                # increase sort_idx
+                sort_idx += 1
 
     def _parse_brand(self, product):
 
