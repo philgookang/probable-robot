@@ -4,6 +4,7 @@ import re
 import requests
 from multiprocessing import Pool
 from setting import *
+from PIL import Image
 
 class Organize:
 
@@ -336,11 +337,18 @@ class Organize:
 
             # check if file exists
             if exists:
+
+                # get file size
+                im = Image.open(url)
+                width, height = im.size
+
                 # create product image
                 pi              = ProductImagesM()
                 pi.sort_idx     = sort_idx
                 pi.product_idx  = product_idx
                 pi.filename     = filename
+                pi.width_pixel  = width
+                pi.height_pixel = height
                 pi.create()
 
                 # increase sort_idx
