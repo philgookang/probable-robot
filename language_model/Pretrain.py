@@ -41,16 +41,15 @@ class Pretrain(nn.Module):
         print("****************************")
 
         self.layer1 = nn.Sequential(
-            nn.Conv2d(3, 32, kernel_size=3, stride=stride, padding=padding),
+            nn.Conv2d(3, 32, kernel_size=3, stride=self.stride, padding=self.padding),
             nn.BatchNorm2d(32),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=5, stride=5))
         self.layer2 = nn.Sequential(
-            nn.Conv2d(32, 64, kernel_size=3, stride=stride, padding=padding),
+            nn.Conv2d(32, 64, kernel_size=3, stride=self.stride, padding=self.padding),
             nn.BatchNorm2d(64),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=5, stride=5))
-        #self.fc = nn.Linear(32*32*64, self.num_classes)
         self.fc = nn.Linear(64*60*72, self.num_classes)
 
     def get_train_data(self):
