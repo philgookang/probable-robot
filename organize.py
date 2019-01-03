@@ -197,7 +197,8 @@ class Organize:
 
             # color processing
             # replace [] & () color text
-            colors = ["black", "beige", "mint", "white", "red", "brown", "navy", "grey", "yellow", "light blue", "pink", "orange", "green", "blue"]
+            colors      = ["black", "beige", "mint", "white", "red", "brown", "navy", "grey", "yellow", "light blue", "pink", "orange", "green", "blue"]
+            colors_kr   = ["옐로우", "블랙", "베이지", "민트", "화이트", "빨간", "갈색", "네이비", "그레이", "핑크", "라이브 블루", "오랜지", "블루", "초록", "메타 실버"]
             colors_translate = {
                 "yellow"        : "옐로우",
                 "black"         : "블랙",
@@ -215,8 +216,12 @@ class Organize:
                 "green"         : "초록",
                 "meta silver"   : "메타 실버"
             }
-            # 곤색
+            # save colors
             for c in colors:
+                name = name.replace("({0})".format(c), " " + c) # (  )
+                name = name.replace("[{0}]".format(c), " " + c) # [ ]
+
+            for c in colors_kr:
                 name = name.replace("({0})".format(c), " " + c) # (  )
                 name = name.replace("[{0}]".format(c), " " + c) # [ ]
 
